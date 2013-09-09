@@ -66,6 +66,7 @@
         _markers = [],  // caches the instances of google.maps.Marker
         _handlers = [], // event handlers
         _windows = [],  // InfoWindow objects
+	_directionsDisplay = null, //Used to show routes
         o = angular.extend({}, _defaults, opts),
         that = this,
         currentInfoWindow = null;
@@ -180,6 +181,21 @@
         });
       };
       
+      this.setRoute = function(route){
+	  var directionsService = new google.maps.DirectionsService();
+	  if(_directionsDisplay == null){
+	    _directionsDisplay = new google.maps.DirectionsRenderer();
+	    _directionsDisplay.setMap(_instance);
+	  }
+	  
+	  
+	  
+	  directionsService.route(route, function(response, status) {
+		if (status == google.maps.DirectionsStatus.OK) {
+		  _directionsDisplay.setDirections(response);
+		}
+	  });
+      }
       this.addMarker = function (lat, lng, icon, infoWindowContent, label, url,
           thumbnail) {
         
@@ -338,7 +354,8 @@
         zoom: "=zoom", // required
         refresh: "&refresh", // optional
         windows: "=windows", // optional
-        events: "=events"
+        events: "=events",
+	route: "=route", // optional
       },
       controller: controller,      
       link: function (scope, element, attrs, ctrl) {
@@ -365,7 +382,7 @@
         if (attrs.options) {
           opts.options = angular.fromJson(attrs.options);
         }
-        
+
         // Create our model
         var _m = new MapModel(angular.extend(opts, {
           container: element[0],            
@@ -470,6 +487,44 @@
           }); 
         }
         
+        
+        // Route
+        scope.$watch("route", function (newValue, oldValue) {
+	  var origin, destination, travelMode
+	  
+	  //Check if string or coordinates are provided
+	  if(newValue.origin.latitude == undefined){
+	    origin = newValue.origin;  
+	  }else{
+	    origin = new google.maps.LatLng(newValue.origin.latitude, newValue.origin.longitude);
+	  }
+
+	  if(newValue.destination.latitude == undefined){
+	    destination = newValue.destination;
+	  }else{
+	    destination = new google.maps.LatLng(newValue.destination.latitude, newValue.destination.longitude);
+	    
+	  }
+	  
+	  //Default is DRIVING
+	  if(newValue.travelMode == undefined)
+	    travelMode = google.maps.TravelMode["DRIVING"]
+	  else
+	    travelMode = google.maps.TravelMode[newValue.travelMode]
+
+	      var request = {
+		  origin: origin,
+		  destination: destination,
+		  // Note that Javascript allows us to access the constant
+		  // using square brackets and a string value as its
+		  // "property."
+		  travelMode: travelMode
+	      };
+	  
+	  _m.setRoute(request);
+
+	});
+	
         // Markers
         scope.$watch("markers", function (newValue, oldValue) {
           

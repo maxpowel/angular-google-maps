@@ -4,7 +4,7 @@
 }());
 
 function ExampleController ($scope, $timeout, $log) {
-  
+	
     // Enable the new Google Maps visuals until it gets enabled by default.
     // See http://googlegeodevelopers.blogspot.ca/2013/05/a-fresh-new-look-for-maps-api-for-all.html
     google.maps.visualRefresh = true;
@@ -32,7 +32,26 @@ function ExampleController ($scope, $timeout, $log) {
 				latitude: 45,
 				longitude: -74
 			}],
-		
+			
+		/** A route between two places */
+		routeProperty: {
+			origin: {
+				latitude: 45,
+				longitude: -73
+			},
+			destination: {
+				latitude: 47,
+				longitude: -73
+				},
+			},
+			
+		/** You can also provide the city name as origin and destination
+		route: {
+			origin: "Palencia",
+			destination: "Valladolid",
+			},
+		*/
+			
 		// These 2 properties will be set when clicking on the map
 		clickedLatitudeProperty: null,	
 		clickedLongitudeProperty: null,
